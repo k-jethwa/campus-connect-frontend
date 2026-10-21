@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { isValidEventInput } from './lib/eventValidation'
 import './App.css'
 
 const HOURS = Array.from({ length: 12 }, (_, i) => String(i + 1))
@@ -27,12 +28,7 @@ function App() {
   const [location, setLocation] = useState('')
   const [events, setEvents] = useState<Event[]>([])
 
-  const canCreate =
-    title.trim() !== '' &&
-    date !== '' &&
-    hour !== '' &&
-    minute !== '' &&
-    location.trim() !== ''
+  const canCreate = isValidEventInput({ title, date, hour, minute, location })
 
   const handleCreate = () => {
     if (!canCreate) return
