@@ -1,121 +1,177 @@
 import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import { isValidEventInput } from './lib/eventValidation'
 import './App.css'
 
+const HOURS = Array.from({ length: 12 }, (_, i) => String(i + 1))
+const MINUTES = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'))
+
+type Event = {
+  id: number
+  title: string
+  date: string
+  time: string
+  location: string
+}
+
+function formatDate(value: string) {
+  const [year, month, day] = value.split('-')
+  if (!year || !month || !day) return value
+  return `${month}/${day}/${year}`
+}
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [title, setTitle] = useState('')
+  const [date, setDate] = useState('')
+  const [hour, setHour] = useState('')
+  const [minute, setMinute] = useState('')
+  const [period, setPeriod] = useState<'AM' | 'PM'>('AM')
+  const [location, setLocation] = useState('')
+  const [events, setEvents] = useState<Event[]>([])
+
+  const canCreate = isValidEventInput({ title, date, hour, minute, location })
+
+  const handleCreate = () => {
+    if (!canCreate) return
+
+    setEvents((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        title: title.trim(),
+        date,
+        time: `${hour}:${minute} ${period}`,
+        location: location.trim(),
+      },
+    ])
+
+    setTitle('')
+    setDate('')
+    setHour('')
+    setMinute('')
+    setPeriod('AM')
+    setLocation('')
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="page">
+      <header className="page-header">
+        <h1>Campus Connect</h1>
+        <p className="subtitle">Create an event</p>
+      </header>
+
+      <main className="card">
+        <div className="field">
+          <label htmlFor="title">Event title</label>
+          <input
+            id="title"
+            type="text"
+            placeholder="e.g. Fall Hackathon Kickoff"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
+
+        <div className="field">
+          <label htmlFor="date">Date</label>
+          <input
+            id="date"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
         </div>
+
+        <div className="field">
+          <label htmlFor="hour">Time</label>
+          <div className="time-row">
+            <select
+              id="hour"
+              aria-label="Hour"
+              value={hour}
+              onChange={(e) => setHour(e.target.value)}
+            >
+              <option value="" disabled>
+                HH
+              </option>
+              {HOURS.map((h) => (
+                <option key={h} value={h}>
+                  {h}
+                </option>
+              ))}
+            </select>
+            <span className="time-sep">:</span>
+            <select
+              aria-label="Minute"
+              value={minute}
+              onChange={(e) => setMinute(e.target.value)}
+            >
+              <option value="" disabled>
+                MM
+              </option>
+              {MINUTES.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+            <div className="period-toggle">
+              <button
+                type="button"
+                className={period === 'AM' ? 'active' : ''}
+                onClick={() => setPeriod('AM')}
+              >
+                AM
+              </button>
+              <button
+                type="button"
+                className={period === 'PM' ? 'active' : ''}
+                onClick={() => setPeriod('PM')}
+              >
+                PM
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="field">
+          <label htmlFor="location">Location</label>
+          <input
+            id="location"
+            type="text"
+            placeholder="e.g. Benson Center, Room 201"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+          />
+        </div>
+
         <button
           type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
+          className="create-btn"
+          disabled={!canCreate}
+          onClick={handleCreate}
         >
-          Count is {count}
+          Create event
         </button>
-      </section>
+      </main>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
+      <section className="events">
+        <h2 className="events-heading">Events</h2>
+        {events.length === 0 ? (
+          <p className="events-empty">No events yet.</p>
+        ) : (
+          <ul className="events-list">
+            {events.map((event) => (
+              <li key={event.id} className="event-item">
+                <div className="event-title">{event.title}</div>
+                <div className="event-meta">
+                  {formatDate(event.date)} &middot; {event.time} &middot; {event.location}
+                </div>
+              </li>
+            ))}
           </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
+        )}
       </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    </div>
   )
 }
 
