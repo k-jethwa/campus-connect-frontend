@@ -11,7 +11,7 @@ describe('event validation (Sabrina Codipilly)', () => {
   }
 
   it('accepts an event when every required field is provided', () => {
-    expect(isValidEventInput(validEvent)).toBe(false)
+    expect(isValidEventInput(validEvent)).toBe(true)
   })
 
   it.each(['title', 'date', 'hour', 'minute', 'location'] as const)(
