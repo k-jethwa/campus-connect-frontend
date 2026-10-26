@@ -1,10 +1,8 @@
 # campus-connect-frontend
 
-React + Vite frontend for Campus Connect. This repo only has the UI — the
-API and all data live in the separate backend repo
-(https://github.com/nfallin/campus-connect), which must be running for the
-app to work. This README covers the frontend; see that repo's README for the
-Go setup and the full API contract.
+Campus Connect is a web application designed to help Santa Clara University students discover campus events in one place. The goal is to make it easier for students to find events, explore campus activities, and get involved without having to search through multiple platforms.
+
+This repository contains the React frontend for Campus Connect. The backend API and data management are handled in a separate backend repository (https://github.com/nfallin/campus-connect), which must be running for the application to work.
 
 ## 1. Prerequisites
 
@@ -52,6 +50,14 @@ browser.
   `VITE_API_BASE_URL` to the backend's full deployed URL and enable CORS on
   the backend for the frontend's origin.
 
+## 5. Using Campus Connect
+
+## How the Frontend Talks to the Backend
+
+The frontend communicates with the Go backend through API requests handled in `src/lib/api.ts`. During development, Vite forwards requests to the backend running at `http://localhost:8080`.
+
+For example, a request to `/api/events` from the frontend is forwarded to the backend's `/events` endpoint.as development continues.
+
 ## 6. Other scripts
 
 ```bash
@@ -60,6 +66,13 @@ npm run lint  # lint with oxlint
 npm run build # typecheck + production build
 npm run preview # preview the production build locally
 ```
+## Tech Stack
+
+- **React and TypeScript:** Frontend development
+- **Vite:** Development server and build tool
+- **Go:** Backend API
+- **Vitest:** Frontend unit testing
+- **GitHub Actions:** Automated testing and build checks
 
 ## CI
 
