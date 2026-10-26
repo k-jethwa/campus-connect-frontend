@@ -17,8 +17,9 @@ npm install
 ```
 
 ## 3. Start the backend first
+Before starting the backend, make sure to read and follow the setup instructions in the backend README. Complete all required installations and configuration steps before running the backend.
 
-In the backend repo:
+Once the backend setup is complete, navigate to the backend repository and run:
 
 ```bash
 go run .
