@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { api } from './lib/api'
 import { isValidEventInput } from './lib/eventValidation'
 import './App.css'
 
@@ -13,10 +14,39 @@ type Event = {
   location: string
 }
 
+type EventResponse = {
+  id: number
+  name: string
+  dateTime: string
+  location: string
+}
+
+type UserResponse = {
+  id: number
+  name: string
+}
+
 function formatDate(value: string) {
   const [year, month, day] = value.split('-')
   if (!year || !month || !day) return value
   return `${month}/${day}/${year}`
+}
+
+function fromEventResponse(event: EventResponse): Event {
+  const dateTime = new Date(event.dateTime)
+  return {
+    id: event.id,
+    title: event.name,
+    date: dateTime.toISOString().slice(0, 10),
+    time: dateTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
+    location: event.location,
+  }
+}
+
+function toDateTime(date: string, hour: string, minute: string, period: 'AM' | 'PM') {
+  let hour24 = Number(hour) % 12
+  if (period === 'PM') hour24 += 12
+  return new Date(`${date}T${String(hour24).padStart(2, '0')}:${minute}:00`).toISOString()
 }
 
 function App() {
@@ -26,30 +56,46 @@ function App() {
   const [minute, setMinute] = useState('')
   const [period, setPeriod] = useState<'AM' | 'PM'>('AM')
   const [location, setLocation] = useState('')
+  const [clubName, setClubName] = useState('')
   const [events, setEvents] = useState<Event[]>([])
+  const [hostUserId, setHostUserId] = useState<number | null>(null)
 
-  const canCreate = isValidEventInput({ title, date, hour, minute, location })
+  useEffect(() => {
+    api.get<{ events: EventResponse[] }>('/events').then(
+      (data) => setEvents(data.events.map(fromEventResponse)),
+      (err) => console.error('Failed to load events', err),
+    )
+
+    api.post<UserResponse>('/users', { name: 'Guest' }).then(
+      (user) => setHostUserId(user.id),
+      (err) => console.error('Failed to provision host user', err),
+    )
+  }, [])
+
+  const canCreate = isValidEventInput({ title, date, hour, minute, location, clubName })
 
   const handleCreate = () => {
-    if (!canCreate) return
+    if (!canCreate || hostUserId === null) return
 
-    setEvents((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        title: title.trim(),
-        date,
-        time: `${hour}:${minute} ${period}`,
+    api
+      .post<EventResponse>('/events', {
+        name: title.trim(),
+        dateTime: toDateTime(date, hour, minute, period),
         location: location.trim(),
-      },
-    ])
-
-    setTitle('')
-    setDate('')
-    setHour('')
-    setMinute('')
-    setPeriod('AM')
-    setLocation('')
+        clubName: clubName.trim(),
+        hostUserId,
+      })
+      .then((created) => {
+        setEvents((prev) => [...prev, fromEventResponse(created)])
+        setTitle('')
+        setDate('')
+        setHour('')
+        setMinute('')
+        setPeriod('AM')
+        setLocation('')
+        setClubName('')
+      })
+      .catch((err) => console.error('Failed to create event', err))
   }
 
   return (
@@ -144,10 +190,21 @@ function App() {
           />
         </div>
 
+        <div className="field">
+          <label htmlFor="clubName">Club</label>
+          <input
+            id="clubName"
+            type="text"
+            placeholder="e.g. ACM"
+            value={clubName}
+            onChange={(e) => setClubName(e.target.value)}
+          />
+        </div>
+
         <button
           type="button"
           className="create-btn"
-          disabled={!canCreate}
+          disabled={!canCreate || hostUserId === null}
           onClick={handleCreate}
         >
           Create event

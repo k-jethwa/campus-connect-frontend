@@ -8,20 +8,21 @@ describe('event validation (Sabrina Codipilly)', () => {
     hour: '10',
     minute: '30',
     location: 'Student Center',
+    clubName: 'ACM',
   }
 
   it('accepts an event when every required field is provided', () => {
     expect(isValidEventInput(validEvent)).toBe(true)
   })
 
-  it.each(['title', 'date', 'hour', 'minute', 'location'] as const)(
+  it.each(['title', 'date', 'hour', 'minute', 'location', 'clubName'] as const)(
     'rejects an event with an empty %s',
     (field) => {
       expect(isValidEventInput({ ...validEvent, [field]: '' })).toBe(false)
     },
   )
 
-  it.each(['title', 'location'] as const)(
+  it.each(['title', 'location', 'clubName'] as const)(
     'rejects an event when %s contains only whitespace',
     (field) => {
       expect(isValidEventInput({ ...validEvent, [field]: '   ' })).toBe(false)

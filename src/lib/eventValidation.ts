@@ -4,6 +4,7 @@ export type EventInput = {
   hour: string
   minute: string
   location: string
+  clubName: string
 }
 
 export function isValidEventInput(input: EventInput): boolean {
@@ -12,6 +13,7 @@ export function isValidEventInput(input: EventInput): boolean {
     input.date !== '' &&
     input.hour !== '' &&
     input.minute !== '' &&
-    input.location.trim() !== ''
+    input.location.trim() !== '' &&
+    input.clubName.trim() !== ''
   )
 }
