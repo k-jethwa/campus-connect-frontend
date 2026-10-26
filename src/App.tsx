@@ -12,6 +12,8 @@ type Event = {
   date: string
   time: string
   location: string
+  contactEmail: string
+  website: string
 }
 
 type EventResponse = {
@@ -19,11 +21,17 @@ type EventResponse = {
   name: string
   dateTime: string
   location: string
+  contactEmail?: string
+  websiteURL?: string
 }
 
 type UserResponse = {
   id: number
   name: string
+}
+
+function toWebsiteHref(website: string) {
+  return /^https?:\/\//i.test(website) ? website : `https://${website}`
 }
 
 function formatDate(value: string) {
@@ -40,6 +48,8 @@ function fromEventResponse(event: EventResponse): Event {
     date: dateTime.toISOString().slice(0, 10),
     time: dateTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
     location: event.location,
+    contactEmail: event.contactEmail ?? '',
+    website: event.websiteURL ?? '',
   }
 }
 
@@ -57,6 +67,8 @@ function App() {
   const [period, setPeriod] = useState<'AM' | 'PM'>('AM')
   const [location, setLocation] = useState('')
   const [clubName, setClubName] = useState('')
+  const [contactEmail, setContactEmail] = useState('')
+  const [website, setWebsite] = useState('')
   const [events, setEvents] = useState<Event[]>([])
   const [hostUserId, setHostUserId] = useState<number | null>(null)
 
@@ -72,7 +84,16 @@ function App() {
     )
   }, [])
 
-  const canCreate = isValidEventInput({ title, date, hour, minute, location, clubName })
+  const canCreate = isValidEventInput({
+    title,
+    date,
+    hour,
+    minute,
+    location,
+    clubName,
+    contactEmail,
+    website,
+  })
 
   const handleCreate = () => {
     if (!canCreate || hostUserId === null) return
@@ -83,10 +104,15 @@ function App() {
         dateTime: toDateTime(date, hour, minute, period),
         location: location.trim(),
         clubName: clubName.trim(),
+        contactEmail: contactEmail.trim(),
+        websiteURL: website.trim(),
         hostUserId,
       })
       .then((created) => {
-        setEvents((prev) => [...prev, fromEventResponse(created)])
+        const event = fromEventResponse(created)
+        if (!event.contactEmail) event.contactEmail = contactEmail.trim()
+        if (!event.website) event.website = website.trim()
+        setEvents((prev) => [...prev, event])
         setTitle('')
         setDate('')
         setHour('')
@@ -94,6 +120,8 @@ function App() {
         setPeriod('AM')
         setLocation('')
         setClubName('')
+        setContactEmail('')
+        setWebsite('')
       })
       .catch((err) => console.error('Failed to create event', err))
   }
@@ -201,6 +229,28 @@ function App() {
           />
         </div>
 
+        <div className="field">
+          <label htmlFor="contactEmail">Contact email (optional)</label>
+          <input
+            id="contactEmail"
+            type="email"
+            placeholder="e.g. acm@scu.edu"
+            value={contactEmail}
+            onChange={(e) => setContactEmail(e.target.value)}
+          />
+        </div>
+
+        <div className="field">
+          <label htmlFor="website">Website (optional)</label>
+          <input
+            id="website"
+            type="text"
+            placeholder="e.g. https://acm.scu.edu"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+          />
+        </div>
+
         <button
           type="button"
           className="create-btn"
@@ -223,6 +273,19 @@ function App() {
                 <div className="event-meta">
                   {formatDate(event.date)} &middot; {event.time} &middot; {event.location}
                 </div>
+                {(event.contactEmail || event.website) && (
+                  <div className="event-contact">
+                    {event.contactEmail && (
+                      <a href={`mailto:${event.contactEmail}`}>{event.contactEmail}</a>
+                    )}
+                    {event.contactEmail && event.website && ' · '}
+                    {event.website && (
+                      <a href={toWebsiteHref(event.website)} target="_blank" rel="noreferrer">
+                        {event.website}
+                      </a>
+                    )}
+                  </div>
+                )}
               </li>
             ))}
           </ul>
