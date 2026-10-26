@@ -2,7 +2,7 @@
 
 Campus Connect is a web application designed to help Santa Clara University students discover campus events in one place. The goal is to make it easier for students to find events, explore campus activities, and get involved without having to search through multiple platforms.
 
-This repository contains the React frontend for Campus Connect. The backend API and data management are handled in a separate backend repository (https://github.com/nfallin/campus-connect), which must be running for the application to work.
+This repository contains the React frontend for Campus Connect. The backend API and data management are handled in a separate backend repository (https://github.com/nfallin/campus-connect-backend), which must be running for the application to work.
 
 ## 1. Prerequisites
 
