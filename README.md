@@ -50,14 +50,6 @@ browser.
   `VITE_API_BASE_URL` to the backend's full deployed URL and enable CORS on
   the backend for the frontend's origin.
 
-## 5. Using Campus Connect
-
-## How the Frontend Talks to the Backend
-
-The frontend communicates with the Go backend through API requests handled in `src/lib/api.ts`. During development, Vite forwards requests to the backend running at `http://localhost:8080`.
-
-For example, a request to `/api/events` from the frontend is forwarded to the backend's `/events` endpoint.as development continues.
-
 ## 6. Other scripts
 
 ```bash
